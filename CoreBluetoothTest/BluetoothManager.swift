@@ -49,10 +49,38 @@ class BluetoothManager: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate
     
     func centralManager(central: CBCentralManager, didDiscoverPeripheral peripheral: CBPeripheral, advertisementData: [String : AnyObject], RSSI: NSNumber) {
         peripherals.insert(peripheral)
+        if peripheral.name == "CC41-A" {
+            centralManager.connectPeripheral(peripheral, options: nil)
+        }
     }
     
     func centralManager(central: CBCentralManager, didConnectPeripheral peripheral: CBPeripheral) {
-        // CODE
+        print("Novipel Probe Connected Captain.")
+        peripheral.delegate = self
+        peripheral.discoverServices(nil)
+    }
+    
+    // Mark: peripheral delegate methods
+    
+    func peripheral(peripheral: CBPeripheral, didDiscoverServices error: NSError?) {
+        print("SERVICES = \(peripheral.services)")
+        if let service = peripheral.services?.first {
+            let service2 = peripheral.services![1]
+            peripheral.discoverCharacteristics(nil, forService: service2)
+        }
+        
+    }
+    
+    func peripheral(peripheral: CBPeripheral, didDiscoverCharacteristicsForService service: CBService, error: NSError?) {
+        print("SERVICE \(service) with CHARACTERISTICS = \(service.characteristics)")
+        if service.UUID == CBUUID(string: "FFE0") {
+            let characteristic = service.characteristics?.filter({ $0.UUID == "FFE1" })
+            print("\(service.characteristics.map { $0.UUID.description })")
+            if characteristic != nil {
+                print("CHARACTERISTIC FOUND!!! = \(characteristic)")
+            }
+            
+        }
     }
     
     // BLE Hardware state

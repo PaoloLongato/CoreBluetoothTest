@@ -48,11 +48,15 @@ class BLEDeviceListController: UITableViewController {
 
         // Configure the cell...
         let perif = peripherals[indexPath.row]
-        let services = perif.services!.first
+        let services = perif.services?.first
         //cell.state.text = String(perif.state.rawValue)
         cell.state.text = "\(services)"
         cell.name.text = perif.name
         cell.id.text = perif.identifier.UUIDString
+        
+        if perif.name == "NoviPel4" {
+           // print ("CARACTERISTCS = \(perif.services)")
+        }
         
         return cell
     }
