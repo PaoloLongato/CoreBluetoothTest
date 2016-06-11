@@ -35,6 +35,7 @@ class BluetoothManager: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate
     }
     var output: String = ""
     var counter: Int = 0
+    var output1: NSMutableData = NSMutableData()
     
     // Designated initializer
     override init() {
@@ -78,7 +79,7 @@ class BluetoothManager: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate
         if service.UUID == CBUUID(string: "FFE0") {
             if let characteristic = service.characteristics?.filter({ $0.UUID.UUIDString == "FFE1" }).first {
                 print("READING CHARACTERISTC = \(characteristic.UUID.UUIDString)")
-                //peripheral.setNotifyValue(true, forCharacteristic: characteristic)
+                peripheral.setNotifyValue(true, forCharacteristic: characteristic)
                 
             }
         }
@@ -88,10 +89,14 @@ class BluetoothManager: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate
         if characteristic.UUID.UUIDString == "FFE1" {
             if let dataString = NSString(data: characteristic.value!, encoding: NSUTF8StringEncoding) {
                 //print("\(NSDate().timeIntervalSinceReferenceDate * 1000), \(dataString)")
-                print("+")
+                //print("+") // reception testing
+                // STRING OF DATA
                 output.appendContentsOf("\(NSDate().timeIntervalSinceReferenceDate * 1000), \(dataString)"+"\n")
+                // BINARY DATA CHUNK
+                //output1.appendData(characteristic.value!)
                 counter += 1
-                if counter == 600 { print(output) }
+                //print("\(counter)")
+                if counter == 50 { print(output) }
             }
         }
     }
