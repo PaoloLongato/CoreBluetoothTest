@@ -33,6 +33,8 @@ class BluetoothManager: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate
             listener!(Array(newPeripherals))
         }
     }
+    var output: String = ""
+    var counter: Int = 0
     
     // Designated initializer
     override init() {
@@ -72,14 +74,25 @@ class BluetoothManager: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate
     }
     
     func peripheral(peripheral: CBPeripheral, didDiscoverCharacteristicsForService service: CBService, error: NSError?) {
-        print("SERVICE \(service) with CHARACTERISTICS = \(service.characteristics)")
+        print("SERVICE \(service.UUID) with CHARACTERISTICS = \(service.characteristics)")
         if service.UUID == CBUUID(string: "FFE0") {
-            let characteristic = service.characteristics?.filter({ $0.UUID == "FFE1" })
-            print("\(service.characteristics.map { $0.UUID.description })")
-            if characteristic != nil {
-                print("CHARACTERISTIC FOUND!!! = \(characteristic)")
+            if let characteristic = service.characteristics?.filter({ $0.UUID.UUIDString == "FFE1" }).first {
+                print("READING CHARACTERISTC = \(characteristic.UUID.UUIDString)")
+                //peripheral.setNotifyValue(true, forCharacteristic: characteristic)
+                
             }
-            
+        }
+    }
+    
+    func peripheral(peripheral: CBPeripheral, didUpdateValueForCharacteristic characteristic: CBCharacteristic, error: NSError?) {
+        if characteristic.UUID.UUIDString == "FFE1" {
+            if let dataString = NSString(data: characteristic.value!, encoding: NSUTF8StringEncoding) {
+                //print("\(NSDate().timeIntervalSinceReferenceDate * 1000), \(dataString)")
+                print("+")
+                output.appendContentsOf("\(NSDate().timeIntervalSinceReferenceDate * 1000), \(dataString)"+"\n")
+                counter += 1
+                if counter == 600 { print(output) }
+            }
         }
     }
     
