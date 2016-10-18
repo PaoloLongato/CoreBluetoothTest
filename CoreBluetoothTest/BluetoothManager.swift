@@ -27,6 +27,7 @@ import CoreBluetooth
 class BluetoothManager: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate {
     private let centralManager = CBCentralManager()
     var listener: (([CBPeripheral]) -> ())?
+    var onUpdate: ((NSData) -> ())?
     var peripherals = Set<CBPeripheral>() {
         didSet(newPeripherals) {
             guard (listener != nil) else { return }
@@ -35,7 +36,6 @@ class BluetoothManager: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate
     }
     var output: String = ""
     var counter: Int = 0
-    var output1: NSMutableData = NSMutableData()
     
     // Designated initializer
     override init() {
@@ -87,16 +87,20 @@ class BluetoothManager: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate
     
     func peripheral(peripheral: CBPeripheral, didUpdateValueForCharacteristic characteristic: CBCharacteristic, error: NSError?) {
         if characteristic.UUID.UUIDString == "FFE1" {
+            // Call
             if let dataString = NSString(data: characteristic.value!, encoding: NSUTF8StringEncoding) {
-                //print("\(NSDate().timeIntervalSinceReferenceDate * 1000), \(dataString)")
+                debugPrint("\(NSDate().timeIntervalSinceReferenceDate * 1000), \(dataString)")
                 //print("+") // reception testing
                 // STRING OF DATA
-                output.appendContentsOf("\(NSDate().timeIntervalSinceReferenceDate * 1000), \(dataString)"+"\n")
-                // BINARY DATA CHUNK
-                //output1.appendData(characteristic.value!)
-                counter += 1
+                // output.appendContentsOf("\(NSDate().timeIntervalSinceReferenceDate * 1000), \(dataString)"+"\n")
+                // counter += 1
                 //print("\(counter)")
-                if counter == 50 { print(output) }
+                //if counter == 50 { print(output) }
+            }
+            // Call onUpdate
+            if let value = characteristic.value {
+                guard self.onUpdate != nil else { return }
+                self.onUpdate!(value)
             }
         }
     }
@@ -122,6 +126,10 @@ class BluetoothManager: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate
             print("nothing")
         }
         
+    }
+    
+    func stopScanning() {
+        self.centralManager.stopScan()
     }
     
     // Mark: Peripheral delegate methods
